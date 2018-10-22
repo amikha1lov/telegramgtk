@@ -74,13 +74,16 @@ class ChatHeader(Gtk.ListBoxRow):
 		super(Gtk.ListBoxRow, self).__init__()
 		self.data = data
 		lb = Gtk.Label(data)
-		lb.set_justify(Gtk.Justification.LEFT)
-		lb.halign = Gtk.Align.START
-		lb.xalign = Gtk.Align.START
-		lb.valign = Gtk.Align.START
 		self.add(lb)
-		self.halign = Gtk.Align.START
-		self.valign = Gtk.Align.START
+		lb.set_hexpand(False)
+		#lb.set_margin_left(0)
+		lb.set_margin_start(0)
+		lb.set_xalign(Gtk.Align.START)
+		lb.set_yalign(Gtk.Align.START)
+		lb.set_direction(Gtk.TextDirection.RTL)
+		#lb.set_justify(Gtk.Justification.LEFT)
+		#self.halign = Gtk.Align.START
+		#self.valign = Gtk.Align.START
 
 
 class LoginWindowStep1(Gtk.Dialog):
@@ -121,7 +124,6 @@ chats_listbox = builder.get_object("chats_listbox")
 print(chats_listbox)
 for di in result:
 	chats_listbox.add(ChatHeader(di.name))
-print("hello")
 
 main_window.show_all()
 Gtk.main()
