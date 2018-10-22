@@ -9,57 +9,79 @@ numberinputbox = None
 codeinputbox = None
 current_user = None
 
+def login():
+	loop = asyncio.get_event_loop()
+	try: 
+		loop.run_until_complete(client.connect())
+		if not loop.run_until_complete(client.is_user_authorized()):
+			dialog = LoginWindowStep1(self)
+			response = dialog.run()
+			phonenumber = numberinputbox.get_text()
+			loop.run_until_complete(client.send_code_request(phonenumber))
+			dialog2 = LoginWindowStep2(self)
+			response = dialog2.run()
+			code = codeinputbox.get_text()
+			global current_user
+			current_user = loop.run_until_complete(client.sign_in(phonenumber, code))
+	finally:
+		print("Logged in successfully!")
+
 class MainWindow(Gtk.Window):
-	def login(self):
-		loop = asyncio.get_event_loop()
-		try: 
-			loop.run_until_complete(client.connect())
-			if not loop.run_until_complete(client.is_user_authorized()):
-				dialog = LoginWindowStep1(self)
-				response = dialog.run()
-				phonenumber = numberinputbox.get_text()
-				loop.run_until_complete(client.send_code_request(phonenumber))
-				dialog2 = LoginWindowStep2(self)
-				response = dialog2.run()
-				code = codeinputbox.get_text()
-				global current_user
-				current_user = loop.run_until_complete(client.sign_in(phonenumber, code))
-		finally:
-			print("Logged in successfully!")
+	def draw_pixbuf(self, widget, event):
+		path = '\\testwp.jpg'
+		pixbuf = Gtk.Gdk.pixbuf_new_from_file(path)
+		widget.window.drawpixbuf(widget.style.bg_gc[Gtk.STATE_NORMAL], pixbug, 0, 0, 0, 0)
+
 
 	def __init__(self):
 		Gtk.Window.__init__(self, title="Telegram GTK", default_width=800, default_height=600)
 		#chats_listbox = Gtk.ListBox()
 
-		self.login()
+		
 
-		vbox = Gtk.VBox()
-		swin = Gtk.ScrolledWindow()
 
-		loop = asyncio.get_event_loop()
-		result = loop.run_until_complete(client.get_dialogs())
-		for di in result:
+		#vbox = Gtk.VBox()
+		#swin = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
+
+		#loop = asyncio.get_event_loop()
+		#result = loop.run_until_complete(client.get_dialogs())
+		#for di in result:
 		#	chats_listbox.add(ChatHeader(di.name))
-			vbox.pack_start(ChatHeader(di.name), 1, 1, 0)
+			#vbox.pack_start(ChatHeader(di.name), 1, 1, 0)
 
-		swin.add_with_viewport(vbox)
-		#print(dir(chats_listbox))
+		#swin.add_with_viewport(vbox)
+		#swin.container.gtk_container_add(vbox)
+		#print(dir(swin))
 
 		#main_grid = Gtk.Grid()
 		#self.add(main_grid)
-		#main_grid.attach(chats_listbox, 1, 1, 1, 1)
+		#main_grid.attach(swin, 0, 0, 1, 1)
 
 		#content_grid = Gtk.Grid()
-		#main_grid.attach(content_grid, 2, 1, 2, 1)
+		#main_grid.attach(content_grid, 1, 0, 2, 1)
+		#content_grid.attach(Gtk.Label("[TitoloChat]"), 1, 1, 1, 1)
 
-		self.add(swin)
-		self.set_size_request(600,400)
+		#swin.set_size_request(300,-1)
+
+		
+
+		#self.set_size_request(700,400)
+
+		#self.background = Gtk.Image.new_from_file('\\testwp.jpg')
 
 class ChatHeader(Gtk.ListBoxRow):
 	def __init__(self, data):
 		super(Gtk.ListBoxRow, self).__init__()
 		self.data = data
-		self.add (Gtk.Label(data))
+		lb = Gtk.Label(data)
+		lb.set_justify(Gtk.Justification.LEFT)
+		lb.halign = Gtk.Align.START
+		lb.xalign = Gtk.Align.START
+		lb.valign = Gtk.Align.START
+		self.add(lb)
+		self.halign = Gtk.Align.START
+		self.valign = Gtk.Align.START
+
 
 class LoginWindowStep1(Gtk.Dialog):
 	def __init__(self, parent):
@@ -85,8 +107,24 @@ class LoginWindowStep2(Gtk.Dialog):
 		box.add(codeinputbox)
 		self.show_all()
 
-window = MainWindow()
-window.connect("destroy", Gtk.main_quit)
-window.show_all()
+login()
+
+builder = Gtk.Builder()
+builder.add_from_file("testlayout001.glade")
+main_window = builder.get_object("main_window")
+
+main_window.connect("destroy", Gtk.main_quit)
+
+loop = asyncio.get_event_loop()
+result = loop.run_until_complete(client.get_dialogs())
+chats_listbox = builder.get_object("chats_listbox")
+print(chats_listbox)
+for di in result:
+	chats_listbox.add(ChatHeader(di.name))
+print("hello")
+
+main_window.show_all()
 Gtk.main()
+
+#vbox.pack_start(ChatHeader(di.name), 1, 1, 0)
 
