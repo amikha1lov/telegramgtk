@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import gi, asyncio
 from telethon import *
 gi.require_version('Gtk', '3.0')
@@ -20,10 +22,13 @@ def login():
 			dialog2 = LoginWindowStep2(self)
 			response = dialog2.run()
 			code = codeinputbox.get_text()
+			dialog3 = ConnectingWindow(self)
+			dialog3.run()
 			global current_user
 			current_user = loop.run_until_complete(client.sign_in(phonenumber, code))
+			dialog3.destroy()
 	finally:
-		print("Logged in successfully!")
+		print("Authenticated, connecting...")	
 
 class MainWindow(Gtk.Window):
 	def draw_pixbuf(self, widget, event):
@@ -31,16 +36,10 @@ class MainWindow(Gtk.Window):
 		pixbuf = Gtk.Gdk.pixbuf_new_from_file(path)
 		widget.window.drawpixbuf(widget.style.bg_gc[Gtk.STATE_NORMAL], pixbug, 0, 0, 0, 0)
 
-
 	def __init__(self):
 		Gtk.Window.__init__(self, title="Telegram GTK", default_width=800, default_height=600)
 		
 class ChatHeader(Gtk.ListBoxRow):
-
-
-	def open_chat(self, widget):
-		print("clicked on " + self.data)
-
 	def __init__(self, data):
 		super(Gtk.ListBoxRow, self).__init__()
 		self.data = data
@@ -50,7 +49,6 @@ class ChatHeader(Gtk.ListBoxRow):
 		lb.set_margin_start(0)
 		lb.set_xalign(Gtk.Align.START)
 		lb.set_direction(Gtk.TextDirection.RTL)
-		self.connect("focus", open_chat)
 
 class LoginWindowStep1(Gtk.Dialog):
 	def __init__(self, parent):
@@ -76,6 +74,19 @@ class LoginWindowStep2(Gtk.Dialog):
 		box.add(codeinputbox)
 		self.show_all()
 
+class ConnectingWindow(Gtk.Dialog):
+	def __init__(self, parent):
+		Gtk.Dialog.__init__(self, "Connecting...", parent, 0, ())
+		self.set_default_size(100, 100)
+		mainlabel = Gtk.Label("Connecting to Telegram...")
+		box = self.get_content_area()
+		box.add(mainlabel)
+		self.show_all()
+
+
+def open_chat(widget, chat):
+	print("clicked on " + chat.data)
+
 login()
 
 builder = Gtk.Builder()
@@ -90,6 +101,8 @@ chats_listbox = builder.get_object("chats_listbox")
 print(chats_listbox)
 for di in result:
 	chats_listbox.add(ChatHeader(di.name))
+
+chats_listbox.connect("row_selected", open_chat)
 
 main_window.show_all()
 Gtk.main()
