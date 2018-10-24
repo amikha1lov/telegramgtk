@@ -9,6 +9,7 @@ client = TelegramClient('telegramgtk+', 138604, '4c57c7c2e94b8116f007dbd39767173
 numberinputbox = None
 codeinputbox = None
 current_user = None
+builder = None
 
 def login():
 	loop = asyncio.get_event_loop()
@@ -40,15 +41,27 @@ class MainWindow(Gtk.Window):
 		Gtk.Window.__init__(self, title="Telegram GTK", default_width=800, default_height=600)
 		
 class ChatHeader(Gtk.ListBoxRow):
-	def __init__(self, data):
+	def __init__(self, data, chat_id):
 		super(Gtk.ListBoxRow, self).__init__()
-		self.data = data
+		self.data = chat_id
 		lb = Gtk.Label(data)
 		self.add(lb)
 		lb.set_hexpand(False)
 		lb.set_margin_start(0)
 		lb.set_xalign(Gtk.Align.START)
 		lb.set_direction(Gtk.TextDirection.RTL)
+
+class ChatBubble(Gtk.ListBoxRow):
+	def __init__(self, post):
+		super(Gtk.ListBoxRow, self).__init__()
+		self.data = post.id
+		lb = Gtk.Label(post.message)
+		self.add(lb)
+		lb.set_hexpand(False)
+		lb.set_margin_start(0)
+		lb.set_xalign(Gtk.Align.START)
+		lb.set_direction(Gtk.TextDirection.RTL)
+		lb.set_line_wrap(True)
 
 class LoginWindowStep1(Gtk.Dialog):
 	def __init__(self, parent):
@@ -85,7 +98,21 @@ class ConnectingWindow(Gtk.Dialog):
 
 
 def open_chat(widget, chat):
-	print("clicked on " + chat.data)
+	print("clicked on " + str(chat.data))
+	loop = asyncio.get_event_loop()
+	posts = loop.run_until_complete(client.get_messages(chat.data, limit=100))
+
+	global builder
+	messages_listbox = builder.get_object("messages_listbox")
+
+	for child in messages_listbox.get_children():
+		messages_listbox.remove(child)
+
+	for post in posts:
+		messages_listbox.insert(ChatBubble(post), 0)
+		print(dir(messages_listbox))
+
+	builder.get_object("main_window").show_all()
 
 login()
 
@@ -100,7 +127,7 @@ result = loop.run_until_complete(client.get_dialogs())
 chats_listbox = builder.get_object("chats_listbox")
 print(chats_listbox)
 for di in result:
-	chats_listbox.add(ChatHeader(di.name))
+	chats_listbox.add(ChatHeader(di.name, di.id))
 
 chats_listbox.connect("row_selected", open_chat)
 
