@@ -4,7 +4,6 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
 client = TelegramClient('telegramgtk+', 138604, '4c57c7c2e94b8116f007dbd39767173a')
-#client.start()  --  replaced with custom login
 numberinputbox = None
 codeinputbox = None
 current_user = None
@@ -35,56 +34,23 @@ class MainWindow(Gtk.Window):
 
 	def __init__(self):
 		Gtk.Window.__init__(self, title="Telegram GTK", default_width=800, default_height=600)
-		#chats_listbox = Gtk.ListBox()
-
 		
-
-
-		#vbox = Gtk.VBox()
-		#swin = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
-
-		#loop = asyncio.get_event_loop()
-		#result = loop.run_until_complete(client.get_dialogs())
-		#for di in result:
-		#	chats_listbox.add(ChatHeader(di.name))
-			#vbox.pack_start(ChatHeader(di.name), 1, 1, 0)
-
-		#swin.add_with_viewport(vbox)
-		#swin.container.gtk_container_add(vbox)
-		#print(dir(swin))
-
-		#main_grid = Gtk.Grid()
-		#self.add(main_grid)
-		#main_grid.attach(swin, 0, 0, 1, 1)
-
-		#content_grid = Gtk.Grid()
-		#main_grid.attach(content_grid, 1, 0, 2, 1)
-		#content_grid.attach(Gtk.Label("[TitoloChat]"), 1, 1, 1, 1)
-
-		#swin.set_size_request(300,-1)
-
-		
-
-		#self.set_size_request(700,400)
-
-		#self.background = Gtk.Image.new_from_file('\\testwp.jpg')
-
 class ChatHeader(Gtk.ListBoxRow):
+
+
+	def open_chat(self, widget):
+		print("clicked on " + self.data)
+
 	def __init__(self, data):
 		super(Gtk.ListBoxRow, self).__init__()
 		self.data = data
 		lb = Gtk.Label(data)
 		self.add(lb)
 		lb.set_hexpand(False)
-		#lb.set_margin_left(0)
 		lb.set_margin_start(0)
 		lb.set_xalign(Gtk.Align.START)
-		lb.set_yalign(Gtk.Align.START)
 		lb.set_direction(Gtk.TextDirection.RTL)
-		#lb.set_justify(Gtk.Justification.LEFT)
-		#self.halign = Gtk.Align.START
-		#self.valign = Gtk.Align.START
-
+		self.connect("focus", open_chat)
 
 class LoginWindowStep1(Gtk.Dialog):
 	def __init__(self, parent):
@@ -127,6 +93,3 @@ for di in result:
 
 main_window.show_all()
 Gtk.main()
-
-#vbox.pack_start(ChatHeader(di.name), 1, 1, 0)
-
